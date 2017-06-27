@@ -1,4 +1,4 @@
-# mrT
+# teepee
 An implementation of the Student-t processes
 
 
