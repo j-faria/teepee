@@ -3,7 +3,7 @@ import numpy as np
 
 
 class Kernel(object):
-    is_kernel = True
+    is_teepee_kernel = True
 
     def __init__(self, *pars):
         self.pars = np.array(pars)
@@ -11,8 +11,11 @@ class Kernel(object):
     def __call__(self, x1, x2=None):
         raise NotImplementedError, 'instances should implement __call__() !'
 
+    def value(self, x1, x2=None):
+        return self.__call__(x2, x2)
+
     def __add__(self, b):
-        if not hasattr(b, "is_kernel"):
+        if not hasattr(b, "is_teepee_kernel"):
             b = ConstantKernel(float(b))
         return Sum(b, self)
 
@@ -20,7 +23,7 @@ class Kernel(object):
         return self.__add__(b)
 
     def __mul__(self, b):
-        if not hasattr(b, "is_kernel"):
+        if not hasattr(b, "is_teepee_kernel"):
             b = ConstantKernel(float(b))
         return Product(b, self)
 
@@ -34,7 +37,7 @@ class Kernel(object):
 
 
 class _operator(Kernel):
-    is_kernel = False
+    is_teepee_kernel = False
     def __init__(self, k1, k2):
         self.k1 = k1
         self.k2 = k2
