@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt 
 import george
 
 import scipy.optimize as op
@@ -20,7 +19,7 @@ TINY = 1.25e-12
 
 class GaussianProcess(object):
     """
-    The basic Gaussian Process object.
+    A basic Gaussian Process object, borrowed from `george` 
 
     :param kernel:
         An instance of a subclass of :class:`kernels.Kernel`.
@@ -37,7 +36,6 @@ class GaussianProcess(object):
     :param kwargs: (optional)
         Any additional arguments are passed directly to the solver's init
         function.
-
     """
 
     def __init__(self, kernel, mean=None, solver=BasicSolver, **kwargs):
@@ -486,6 +484,8 @@ class _default_mean(object):
 
 
 class TProcess(object):
+    """ A T-process object, most boilerplate also borrowed form `george` """
+
     def __init__(self, kernel, df, mean=None, solver=BasicSolver, **kwargs):
         self.kernel = kernel
         self._computed = False
@@ -497,7 +497,7 @@ class TProcess(object):
         self.solver_kwargs = kwargs
         self.solver = None
 
-        assert df > 2
+        assert df > 2, 'Degrees-of-freedom must be > 2.'
         self.df = df
 
 
@@ -812,8 +812,6 @@ class TProcess(object):
         cov = self.get_matrix(x)
         return multivariate_t_samples(cov, self.df, size, mean=self.mean(t))
 
-
-
     def get_matrix(self, t):
         """
         Get the covariance matrix at a given set of independent coordinates.
@@ -919,48 +917,3 @@ def multivariate_t_samples(matrix, df, N, mean=None):
     return mean + z/np.sqrt(x)[:,None]   # same output format as random.multivariate_normal
 
 
-
-
-
-
-kernel = 0.01*george.kernels.ExpSquaredKernel(1/20.)
-mean = lambda x: np.cos(x)
-gp = GaussianProcess(kernel,)# mean=mean)
-tp = TProcess(kernel, df=2.1, )#mean=mean)
-
-
-t = np.linspace(0, 3, 100)
-fig, ((ax1,ax2), (ax3,ax4)) = plt.subplots(2, 2, sharex=True, sharey=True)
-ax1.plot(t, gp.sample(t, size=100).T, alpha=0.4)
-ax2.plot(t, tp.sample(t, size=100).T, alpha=0.4)
-
-
-def data1():
-    return np.array([1.2, 2.8]), np.array([0.5, -1])
-
-def data2():
-    x = np.sort(np.random.uniform(0, 3, size=15))
-    y = gp.sample(x)
-    y[5] -= 2 # outlier
-    return x, y
-
-
-x, y = data1()
-
-
-gp.compute(x)
-ax3.plot(t, gp.sample_conditional(y, t, size=10).T, alpha=0.5)
-mu, cov = gp.predict(y, t)
-std = np.sqrt(np.diag(cov))
-ax3.fill_between(x=t, y1=mu-2*std, y2=mu+2*std, alpha=0.5, color='k')
-ax3.plot(x, y, 'o')
-
-tp.compute(x)
-ax4.plot(t, tp.sample_conditional(y, t, size=10).T, alpha=0.5)
-newdf, mu, cov = tp.predict(y, t)
-std = np.sqrt(np.diag(cov))
-ax4.fill_between(x=t, y1=mu-2*std, y2=mu+2*std, alpha=0.4, color='k')
-ax4.plot(x, y, 'o')
-
-ax1.set_ylim(-4, 4)
-plt.show()
