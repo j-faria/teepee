@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 
+from sys import float_info
+eps = float_info.epsilon
+
 
 class Kernel(object):
     is_teepee_kernel = True
@@ -80,6 +83,21 @@ class ConstantKernel(Kernel):
         if x2 is None:
             x2 = x1
         return self.pars[0] * np.ones((x1.shape[0], x2.shape[0]))
+
+
+class WhiteKernel(Kernel):
+    def __init__(self, value):
+        super(WhiteKernel, self).__init__(value)
+
+    def __call__(self, x1, x2=None):
+        if x2 is None:
+            return self.pars[0] * np.identity(x1.size)
+        else:
+            # 10*eps is necessary because of floating-point reasons
+            # which means this implementation is not the best
+            # also it is not incredibly fast for big arrays
+            return self.pars[0] * \
+                   (np.abs(np.subtract.outer(x1,x2).squeeze()) <= 10*eps).astype(np.float)
 
 
 class ExpSquaredKernel(Kernel):
