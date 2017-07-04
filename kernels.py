@@ -15,7 +15,7 @@ class Kernel(object):
         raise NotImplementedError, 'instances should implement __call__() !'
 
     def value(self, x1, x2=None):
-        return self.__call__(x2, x2)
+        return self.__call__(x1, x2)
 
     def __add__(self, b):
         if not hasattr(b, "is_teepee_kernel"):
